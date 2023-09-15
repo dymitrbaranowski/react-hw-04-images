@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import * as API from './api/fetchImages';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
@@ -9,116 +9,104 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import { Searchbar } from './Searchbar/Searchbar';
 import 'react-toastify/dist/ReactToastify.css';
 
-export class App extends Component {
-  state = {
-    images: [],
-    isLoading: false,
-    currentSearch: '',
-    pageNr: 1,
-    modalOpen: false,
-    modalImg: null,
-    modalAlt: '',
-    totalPages: 0,
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentSearch, setCurrentSearch] = useState('');
+  const [pageNr, setPageNr] = useState(1);
+  const [modalImg, setModalImg] = useState(false);
+  const [modalOpen, setModalOpen] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.currentSearch !== this.state.currentSearch ||
-      prevState.pageNr !== this.state.pageNr
-    ) {
-      this.addImages();
+  useEffect(() => {
+    if (currentSearch === '') {
+      return;
     }
-  }
 
-  addImages = async () => {
-    const { currentSearch, pageNr } = this.state;
-    try {
-      this.setState({ isLoading: true });
-      const data = await API.fetchImages(currentSearch, pageNr);
+    async function addImages() {
+      try {
+        setIsLoading(true);
+        const data = await API.fetchImages(currentSearch, pageNr);
 
-      if (data.hits.length === 0) {
-        return toast.info('Sorry image not found...', {
+        if (data.hits.length === 0) {
+         
+          return toast.info('Sorry image not found...', {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+
+        const normalizedImages = API.normalizedImages(data.hits);
+
+        setImages(prevImages => [...prevImages, ...normalizedImages]); 
+        setIsLoading(false); 
+        setTotalPages(Math.ceil(data.totalHits / 12)); 
+      } catch {
+        toast.error('Something went wrong!', {
           position: toast.POSITION.TOP_RIGHT,
-        });
+        }); 
+      } finally {
+        setIsLoading(false); 
       }
-
-      const normalizedImages = API.normalizedImages(data.hits);
-
-      this.setState(state => ({
-        images: [...state.images, ...normalizedImages],
-        isLoading: false,
-        error: '',
-        totalPages: Math.ceil(data.totalHits / 12),
-      }));
-    } catch (error) {
-      this.setState({ error: 'Something went wrong!' });
-    } finally {
-      this.setState({ isLoading: false });
     }
+    addImages();
+  }, [currentSearch, pageNr]);
+
+ const handleSubmit = inputValue => {
+   setCurrentSearch(inputValue); 
+   setImages([]); 
+   setPageNr(1); 
   };
 
-  handleSubmit = inputValue => {
-    this.setState({
-      images: [],
-      isLoading: false,
-      currentSearch: inputValue,
-      pageNr: 1,
-    });
+   const handleClickMore = () => {
+     setPageNr(prevPage => prevPage + 1);
   };
-
-  handleClickMore = () => {
-    this.setState(prevState => ({
-      pageNr: prevState.pageNr + 1,
-    }));
+  
+  const handleImageClick = image => {
+    setModalImg(image);
+    setModalOpen(true);
+     document.body.style.overflow = 'hidden';
   };
-
-  handleImageClick = image => {
-    this.setState({ modalImg: image, modalOpen: true });
-    document.body.style.overflow = 'hidden';
-  };
-
-  handleModalClose = () => {
-    this.setState({ modalImg: null, modalOpen: false });
+  
+  const handleModalClose = () => {
+    setModalImg(null);
+    setModalOpen(false);
     document.body.style.overflow = 'auto';
   };
+  
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridGap: '16px',
+        paddingBottom: '24px',
+      }}
+    >
+      <ToastContainer transition={Slide} />
+      <Searchbar onSubmit={handleSubmit} />
+      {images.length > 0 ? (
+        <ImageGallery images={images} onItemClick={handleImageClick} />
+      ) : (
+        <p
+          style={{
+            padding: 100,
+            textAlign: 'center',
+            fontSize: 30,
+          }}
+        >
+          Gallery is empty...
+        </p>
+      )}
+      {isLoading && <Loader />}
+      {images.length > 0 && totalPages !== pageNr && !isLoading && (
+        <Button onClick={handleClickMore} />
+      )}
+      {modalOpen && <Modal image={modalImg} onClose={handleModalClose} />}
+    </div>
+  );
 
-  render() {
-    const { images, isLoading, pageNr, modalImg, modalOpen, totalPages } =
-      this.state;
-    return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gridGap: '16px',
-          paddingBottom: '24px',
-        }}
-      >
-        <ToastContainer transition={Slide} />
-        <Searchbar onSubmit={this.handleSubmit} />
-        {images.length > 0 ? (
-          <ImageGallery images={images} onItemClick={this.handleImageClick} />
-        ) : (
-          <p
-            style={{
-              padding: 100,
-              textAlign: 'center',
-              fontSize: 30,
-            }}
-          >
-            Gallery is empty...
-          </p>
-        )}
-        {isLoading && <Loader />}
-        {images.length > 0 && totalPages !== pageNr && !isLoading && (
-          <Button onClick={this.handleClickMore} />
-        )}
-        {modalOpen && (
-          <Modal image={modalImg} onClose={this.handleModalClose} />
-        )}
-      </div>
-    );
-  }
-}
+
+
+};
 
 export default App;
