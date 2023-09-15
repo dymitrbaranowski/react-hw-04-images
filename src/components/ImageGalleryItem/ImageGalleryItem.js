@@ -7,7 +7,7 @@ export const ImageItem = ({ image }) => {
   const [showModal, setShowModal] = useState(false);
 
   const toggleModal = () => {
-    setShowModal(prevModal => !prevModal); // Инвертирует значение showModal
+    setShowModal(prevModal => !prevModal); 
   };
 
   return (
