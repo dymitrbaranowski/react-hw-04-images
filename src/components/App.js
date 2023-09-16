@@ -19,7 +19,7 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    if (currentSearch === '') {
+    if (!currentSearch) {
       return;
     }
 
@@ -28,8 +28,7 @@ export const App = () => {
         setIsLoading(true);
         const data = await API.fetchImages(currentSearch, pageNr);
 
-        if (data.hits.length === 0) {
-         
+        if (!data.hits.length) {
           return toast.info('Sorry image not found...', {
             position: toast.POSITION.TOP_RIGHT,
           });
@@ -37,42 +36,42 @@ export const App = () => {
 
         const normalizedImages = API.normalizedImages(data.hits);
 
-        setImages(prevImages => [...prevImages, ...normalizedImages]); 
-        setIsLoading(false); 
-        setTotalPages(Math.ceil(data.totalHits / 12)); 
+        setImages(prevImages => [...prevImages, ...normalizedImages]);
+        setIsLoading(false);
+        setTotalPages(Math.ceil(data.totalHits / 12));
       } catch {
         toast.error('Something went wrong!', {
           position: toast.POSITION.TOP_RIGHT,
-        }); 
+        });
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     }
     addImages();
   }, [currentSearch, pageNr]);
 
- const handleSubmit = inputValue => {
-   setCurrentSearch(inputValue); 
-   setImages([]); 
-   setPageNr(1); 
+  const handleSubmit = inputValue => {
+    setCurrentSearch(inputValue);
+    setImages([]);
+    setPageNr(1);
   };
 
-   const handleClickMore = () => {
-     setPageNr(prevPage => prevPage + 1);
+  const handleClickMore = () => {
+    setPageNr(prevPage => prevPage + 1);
   };
-  
+
   const handleImageClick = image => {
     setModalImg(image);
     setModalOpen(true);
-     document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
   };
-  
+
   const handleModalClose = () => {
     setModalImg(null);
     setModalOpen(false);
     document.body.style.overflow = 'auto';
   };
-  
+
   return (
     <div
       style={{
@@ -104,9 +103,6 @@ export const App = () => {
       {modalOpen && <Modal image={modalImg} onClose={handleModalClose} />}
     </div>
   );
-
-
-
 };
 
 export default App;
