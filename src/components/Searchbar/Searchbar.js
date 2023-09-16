@@ -11,14 +11,12 @@ import {
 
 export const Searchbar = ({ onSubmit }) => {
   const [searchName, setSearchName] = useState('');
-  const [inputValue, setInputValue] = useState('');
 
-  const handleChange = event => setInputValue(event.target.value);
+  const handleChange = event => setSearchName(event.target.value);
 
   const handleSubmit = event => {
     event.preventDefault();
-    setSearchName(inputValue.trim());
-    onSubmit(searchName);
+    onSubmit(searchName.trim());
     event.target.reset();
   };
 
@@ -33,7 +31,7 @@ export const Searchbar = ({ onSubmit }) => {
           name="searchName"
           type="text"
           id="search"
-          value={inputValue}
+          value={searchName}
           onChange={handleChange}
           placeholder="Search images and photos"
         />
