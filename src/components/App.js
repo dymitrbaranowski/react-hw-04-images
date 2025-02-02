@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import * as API from './api/fetchImages';
-import NormalizedImages from './api/fetchImages';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
@@ -12,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export const App = () => {
   const [images, setImages] = useState([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [currentSearch, setCurrentSearch] = useState('');
   const [pageNr, setPageNr] = useState(1);
@@ -20,6 +20,8 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     if (!currentSearch) {
       return;
     }
@@ -27,6 +29,7 @@ export const App = () => {
     async function addImages() {
       try {
         setIsLoading(true);
+
         const data = await API.fetchImages(currentSearch, pageNr);
 
         if (!data.hits.length) {
@@ -49,6 +52,8 @@ export const App = () => {
       }
     }
     addImages();
+
+    return () => controller.abort();
   }, [currentSearch, pageNr]);
 
   const handleSubmit = inputValue => {
