@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as API from './api/fetchImages';
+import NormalizedImages from './api/fetchImages';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
