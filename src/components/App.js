@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as API from './api/fetchImages';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
@@ -10,6 +10,7 @@ import { Searchbar } from './Searchbar/Searchbar';
 import 'react-toastify/dist/ReactToastify.css';
 
 export const App = () => {
+  const controllerRef = useRef();
   const [images, setImages] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -20,13 +21,14 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController();
-
     if (!currentSearch) {
       return;
     }
 
     async function addImages() {
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
       try {
         setIsLoading(true);
 
@@ -53,7 +55,7 @@ export const App = () => {
     }
     addImages();
 
-    return () => controller.abort();
+    // return () => controller.abort();
   }, [currentSearch, pageNr]);
 
   const handleSubmit = inputValue => {

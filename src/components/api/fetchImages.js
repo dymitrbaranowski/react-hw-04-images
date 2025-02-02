@@ -5,6 +5,8 @@ const perPage = 12;
 const apiKey = '38440528-27ad43a15fe64cab61d6047d1';
 
 export const fetchImages = async (inputValue, pageNr) => {
+  // console.log(controllerRef.signal.aborted);
+
   const response = await axios.get(
     `/?q=${inputValue}&page=${pageNr}&key=${apiKey}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${perPage}`
   );
